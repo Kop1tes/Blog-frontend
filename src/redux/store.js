@@ -3,8 +3,8 @@ import { postsReducer } from "./slices/posts";
 
 const store = configureStore({      //создаем магазин
     reducer: {      //создаем хранилище
-        posts:postsReducer,
-    } 
+        posts: postsReducer,
+    },
 });
 
 export default store;       //экспортируем

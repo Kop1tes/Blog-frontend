@@ -3,10 +3,11 @@ import axios from "../../axios"
 
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
     const { data } = await axios.get('/posts');
+    console.log(data)
     return data;
-})
+});
 
-export const fetchTags = createAsyncThunk('posts/fetchPosts', async () => {
+export const fetchTags = createAsyncThunk('posts/fetchTags', async () => {
     const { data } = await axios.get('/tags');
     return data;
 })
@@ -19,8 +20,8 @@ const initialState = {
     tags: {
         items: [],
         status: 'loading',
-    }
-}
+    },
+};
 
 const postsSlice = createSlice({
     name: 'posts',
