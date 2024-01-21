@@ -6,9 +6,14 @@ import SimpleMDE from 'react-simplemde-editor';
 
 import 'easymde/dist/easymde.min.css';
 import styles from './AddPost.module.scss';
+import { useSelector } from 'react-redux';
+import { selectIsAuth } from '../../redux/slices/auth';
+import { Navigate } from 'react-router-dom';
 
 export const AddPost = () => {
   const imageUrl = '';
+  const isAuth = useSelector(selectIsAuth);
+
   const [value, setValue] = React.useState('');
 
   const handleChangeFile = () => {};
@@ -33,6 +38,10 @@ export const AddPost = () => {
     }),
     [],
   );
+
+  if  !isAuth) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <Paper style={{ padding: 30 }}>
