@@ -1,17 +1,20 @@
 import React from 'react';
+import {Navigate, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import SimpleMDE from 'react-simplemde-editor';
+import { Link, useParams } from 'react-router-dom';
 
 import 'easymde/dist/easymde.min.css';
 import styles from './AddPost.module.scss';
-import { useSelector } from 'react-redux';
 import { selectIsAuth } from '../../redux/slices/auth';
-import { Navigate } from 'react-router-dom';
 import axios from '../../axios';
 
 export const AddPost = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const isAuth = useSelector(selectIsAuth);
 
   const [isLoading, setLoading] = React.useState(false);
@@ -39,28 +42,71 @@ export const AddPost = () => {
   };
 
   const onChange = React.useCallback((value) => {
-    setValue(value);
+    setText(value);
   }, []);
 
-  const onSubmit = async () => {
-   try {
-     setLoading(true);
+//   const onSubmit = async () => {
+//    try {
+//      setLoading(true);
 
-     const fields = {
-       title,
-       imageUrl,
-       tags,
-       text,
+//      const fields = {
+//        title,
+//        imageUrl,
+//        tags: tags.split(','),
+//        text,
+//      };
+
+//      const { data } = await axios.post('/posts', fields);
+     
+//      const id = data._id;   // вытаскиваем статью
+
+//      navigate(`/posts/${id}`);    //делаем переход на posts, то есть переводим пользователя на статью если она создана
+//    } catch (error) {
+//      console.warn(error);
+//      alert('Ошибка при создании статьи!')
+//    }
+//  }
+
+const onSubmit = async () => {
+  try {
+    setLoading(true);
+
+    const fields = {
+      title,
+      imageUrl,
+      tags,
+      text,
+    };
+
+    const response = await axios.post('/posts', fields);
+    const { data } = response;
+
+    // Проверка наличия _id в ответе
+    const id = data.post._id;
+
+    if (id) {
+      navigate(`/posts/${id}`);
+    } else {
+      console.error('Отсутствует _id в ответе сервера');
+      alert('Ошибка при создании статьи!');
+    }
+  } catch (error) {
+    console.error(error);
+
+    // Проверьте дополнительные сведения об ошибке, если они есть
+    if (error.response && error.response.data) {
+      console.error('Подробности об ошибке:', error.response.data);
     }
 
-     const { data } = await axios.post("/posts", fields)
-     
-     
-   } catch (error) {
-    console.log(error)
-   }
- }
+    alert('Ошибка при создании статьи!');
+  } finally {
+    setLoading(false);
+  }
+};
 
+
+
+  
   const options = React.useMemo(
     () => ({
       spellChecker: false,
@@ -117,13 +163,13 @@ export const AddPost = () => {
         onChange={onChange}
         options={options} />
       <div className={styles.buttons}>
-        <Button onClick={onSubmit} size="large" variant="contained">
-          Опубликовать
-        </Button>
-        <a href="/">
-          <Button size="large">Отмена</Button>
-        </a>
-      </div>
+  <Button onClick={onSubmit} size="large" variant="contained">
+    Опубликовать
+  </Button>
+  <Link to="/">
+    <Button size="large">Отмена</Button>
+  </Link>
+</div>
     </Paper>
   );
 };
