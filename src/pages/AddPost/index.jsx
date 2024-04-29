@@ -17,12 +17,16 @@ export const AddPost = () => {
   const navigate = useNavigate();
   const isAuth = useSelector(selectIsAuth);
 
+  const idRef = React.useRef(id); // Используем useRef для хранения актуального значения id
+
   const [isLoading, setLoading] = React.useState(false);
   const [text, setText] = React.useState('');
   const [title, setTitle] = React.useState('');
   const [tags, setTags] = React.useState('');
   const [imageUrl, setImageUrl] = React.useState('');
   const inputFileRef = React.useRef(null);
+
+  const isEditing = Boolean(id);
 
   const handleChangeFile = async (event) => {   //добавление картинки
     try {
@@ -68,45 +72,60 @@ export const AddPost = () => {
 //  }
 
 const onSubmit = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const fields = {
-      title,
-      imageUrl,
-      tags,
-      text,
-    };
+      const fields = {
+        title,
+        imageUrl,
+        tags,
+        text,
+      };
 
-    const response = await axios.post('/posts', fields);
-    const { data } = response;
+      const { data } = isEditing
+        ? await axios.patch(`/posts/${idRef.current}`, fields)
+        : await axios.post('/posts', fields);
 
-    // Проверка наличия _id в ответе
-    const id = data.post._id;
+      const postId = isEditing ? idRef.current : data._id;
 
-    if (id) {
-      navigate(`/posts/${id}`);
-    } else {
-      console.error('Отсутствует _id в ответе сервера');
-      alert('Ошибка при создании статьи!');
-    }
-  } catch (error) {
-    console.error(error);
+      if (postId) {
+        navigate(`/posts/${postId}`);
+      } else {
+        console.error('Отсутствует _id в ответе сервера');
+        alert('Ошибка при создании/редактировании статьи!');
+      }
+    } catch (error) {
+      console.error(error);
 
     // Проверьте дополнительные сведения об ошибке, если они есть
     if (error.response && error.response.data) {
       console.error('Подробности об ошибке:', error.response.data);
     }
 
-    alert('Ошибка при создании статьи!');
+    alert('Ошибка при создании/редактировании статьи!');
   } finally {
     setLoading(false);
   }
 };
 
-
-
   
+  React.useEffect(() => {
+    if (idRef.current) {
+      axios
+        .get(`/posts/${idRef.current}`)
+        .then(({ data }) => {
+          setTitle(data.title);
+          setText(data.text);
+          setImageUrl(data.imageUrl);
+          setTags(data.tags.join(','));
+        })
+        .catch((err) => {
+          console.warn(err);
+          alert('Ошибка при получении статьи!');
+        });
+    }
+  }, []);
+
   const options = React.useMemo(
     () => ({
       spellChecker: false,
@@ -164,7 +183,7 @@ const onSubmit = async () => {
         options={options} />
       <div className={styles.buttons}>
   <Button onClick={onSubmit} size="large" variant="contained">
-    Опубликовать
+          {isEditing ? 'Сохранить' : 'Опубликовать' }
   </Button>
   <Link to="/">
     <Button size="large">Отмена</Button>

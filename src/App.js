@@ -22,6 +22,7 @@ function App() {
         <Routes>    //прикручиваем компоненты с помощью этой библиотеки
           <Route path="/" element={<Home />} />    //рендерим главную страницу
           <Route path="/posts/:id" element={<FullPost />} />
+          <Route path="/posts/:id/edit" element={<AddPost />} />
           <Route path="/add-post" element={<AddPost />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Registration />} />
